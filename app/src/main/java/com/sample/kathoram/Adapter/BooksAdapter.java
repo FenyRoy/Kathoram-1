@@ -1,14 +1,17 @@
 package com.sample.kathoram.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.sample.kathoram.Activities.BookPagesActivity;
 import com.sample.kathoram.Models.Books;
 import com.sample.kathoram.R;
 import com.sample.kathoram.ViewHolders.BooksViewHolder;
@@ -33,7 +36,7 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BooksViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull BooksViewHolder holder, final int position) {
 
         holder.bookNameTextView.setText(booksList.get(position).getName());
         try
@@ -52,6 +55,15 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksViewHolder> {
             holder.bookTimeTextView.setText("Not available");
 
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                ctx.startActivity(new Intent(ctx, BookPagesActivity.class).putExtra("id",booksList.get(position).getBookid()));
+
+            }
+        });
 
     }
 

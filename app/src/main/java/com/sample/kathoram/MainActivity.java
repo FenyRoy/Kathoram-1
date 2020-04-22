@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 bookList.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
                     String name = NOT_AVAILABLE, time = NOT_AVAILABLE;
                     if (snapshot.hasChild("name")) {
                         name = snapshot.child("name").getValue().toString();
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                         time = snapshot.child("time").getValue().toString();
                     }
 
-                    bookList.add(new Books(name, time));
+                    bookList.add(new Books(snapshot.getKey(),name, time));
 
                 }
 
