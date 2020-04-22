@@ -47,12 +47,12 @@
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
-            android:background="#ffffff"
-            android:hint="New situation name ?"
+            android:background="@drawable/smothened_corner_with_stroke"
+            android:hint="New book name ?"
             android:layout_centerHorizontal="true"
             android:gravity="center"
             android:textSize="15sp"
-            android:inputType="text"/>
+            android:inputType="text" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -69,22 +69,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="50dp"
                 android:layout_marginTop="15dp"
-                android:background="@android:color/transparent"
+                android:backgroundTint="@color/colorRed"
+                android:background="@drawable/curved_corners"
                 android:padding="2dp"
                 android:text="Cancel"
                 android:layout_marginBottom="5dp"
-                android:textColor="@color/colorPrimaryDark" />
+                android:textColor="@color/colorWhite"/>
 
             <Button
                 android:id="@+id/dialog_new_book_done_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:background="@android:color/transparent"
+                android:backgroundTint="@color/colorPrimaryDark"
+                android:background="@drawable/curved_corners"
                 android:padding="2dp"
                 android:text="Done"
                 android:layout_marginStart="50dp"
-                android:textColor="@color/colorPrimaryDark" />
+                android:textColor="@color/colorWhite" />
 
         </LinearLayout>
 

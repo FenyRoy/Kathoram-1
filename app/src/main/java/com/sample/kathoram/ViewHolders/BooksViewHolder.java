@@ -1,6 +1,7 @@
 package com.sample.kathoram.ViewHolders;
 
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;

@@ -1,31 +1,26 @@
 package com.sample.kathoram.Models;
 
 public class BookPages {
-    private String pageNo;
-    private boolean isDefault;
-    private String uriPath;
-    private String pageType;
 
-    public BookPages(String pageNo, boolean isDefault, String uriPath, String pageType) {
+    private String key;
+    private String pageNo;
+    private String uriPath;
+
+    public BookPages(String key, String pageNo, String uriPath) {
+        this.key = key;
         this.pageNo = pageNo;
-        this.isDefault = isDefault;
         this.uriPath = uriPath;
-        this.pageType = pageType;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public String getPageNo() {
         return pageNo;
     }
 
-    public boolean isDefault() {
-        return isDefault;
-    }
-
     public String getUriPath() {
         return uriPath;
-    }
-
-    public String getPageType() {
-        return pageType;
     }
 }

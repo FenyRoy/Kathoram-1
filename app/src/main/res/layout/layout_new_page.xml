@@ -13,13 +13,25 @@
         android:layout_gravity="center"
         android:background="@color/colorWhite">
 
+        <ProgressBar
+            android:id="@+id/new_page_progressbar"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminateTint="@color/colorPrimaryDark"
+            android:indeterminate="true"
+            android:layout_alignParentTop="true"
+            />
+
+
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
-            android:text="New Book"
+            android:text="New Page"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -36,57 +48,125 @@
             android:layout_marginEnd="20dp"
             android:layout_marginRight="50dp"
             android:gravity="center"
-            android:text="Enter the name for new book."
+            android:text="Enter the page Number"
             android:textSize="13sp" />
 
         <EditText
-            android:id="@+id/dialog_new_book_name_edittext"
+            android:id="@+id/dialog_new_page_no_edittext"
             android:layout_width="220dp"
             android:layout_height="50dp"
             android:layout_below="@id/dialog_new_book_message_textview"
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
-            android:background="#ffffff"
-            android:hint="New book name ?"
+            android:background="@drawable/smothened_corner_with_stroke"
+            android:hint="New page No:"
             android:layout_centerHorizontal="true"
             android:gravity="center"
             android:textSize="15sp"
             android:inputType="text"/>
 
+
+        <LinearLayout
+            android:id="@+id/dialog_new_page_record_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@id/dialog_new_page_no_edittext"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginRight="50dp">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="12sp"
+                android:orientation="vertical"
+                >
+                <ImageButton
+                    android:id="@+id/dialog_start_recording"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_mic_start"
+                    android:background="@android:color/transparent"
+                    android:tint="@color/colorPrimaryDark"
+                   />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="start"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="12sp"
+                android:orientation="vertical"
+                >
+                <ImageButton
+                    android:id="@+id/dialog_stop_recording"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_stop"
+                    android:background="@android:color/transparent"
+                    android:tint="@color/colorPrimaryDark"
+                    android:visibility="visible"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="stop"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_below="@id/dialog_new_book_name_edittext"
+            android:layout_below="@id/dialog_new_page_record_wrapper"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="20dp"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="10dp">
 
             <Button
-                android:id="@+id/dialog_new_book_cancel_btn"
+                android:id="@+id/dialog_new_page_cancel_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="50dp"
                 android:layout_marginTop="15dp"
-                android:background="@android:color/transparent"
+                android:backgroundTint="@color/colorRed"
+                android:background="@drawable/curved_corners"
                 android:padding="2dp"
                 android:text="Cancel"
                 android:layout_marginBottom="5dp"
-                android:textColor="@color/colorPrimaryDark" />
+                android:textColor="@color/colorWhite" />
 
             <Button
-                android:id="@+id/dialog_new_book_done_btn"
+                android:id="@+id/dialog_new_page_done_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:background="@android:color/transparent"
+                android:backgroundTint="@color/colorPrimaryDark"
+                android:background="@drawable/curved_corners"
                 android:padding="2dp"
                 android:text="Done"
                 android:layout_marginStart="50dp"
-                android:textColor="@color/colorPrimaryDark" />
+                android:textColor="@color/colorWhite" />
 
         </LinearLayout>
+
 
     </RelativeLayout>
 

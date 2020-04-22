@@ -7,6 +7,7 @@
     android:orientation="vertical">
 
     <ProgressBar
+        android:id="@+id/page_progressbar"
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
@@ -55,15 +56,6 @@
         android:layout_marginBottom="8dp"
         >
 
-        <ImageButton
-            android:id="@+id/page_start_recording"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_mic"
-            android:background="@android:color/transparent"
-            android:tint="@color/colorPrimaryDark"
-            android:layout_weight="1"
-            android:layout_margin="4dp"/>
 
         <ImageButton
             android:id="@+id/page_play_recording"
@@ -75,15 +67,6 @@
             android:layout_weight="1"
             android:layout_margin="4dp"/>
 
-        <ImageButton
-            android:id="@+id/page_upload_recording"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_cloud_upload"
-            android:background="@android:color/transparent"
-            android:tint="@color/colorPrimaryDark"
-            android:layout_weight="1"
-            android:layout_margin="4dp"/>
 
         <ImageButton
             android:id="@+id/page_delete_recording"
