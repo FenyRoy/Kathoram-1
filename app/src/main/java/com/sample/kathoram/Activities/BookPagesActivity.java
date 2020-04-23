@@ -2,13 +2,16 @@ package com.sample.kathoram.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -18,6 +21,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
@@ -84,6 +88,35 @@ public class BookPagesActivity extends AppCompatActivity {
     Handler customHandler = new Handler();
     long startTime=0L,timeInMillis=0L,timeSwapBuff=0L,updateTime=0L;
     int elaspedSec=0,elaspedMin=0,elaspedMillis=0;
+
+    TextView timeElapsedTextView,recordStatusTexview,startRecordingTextView;
+
+    final Runnable updateTimerThread = new Runnable() {
+        @Override
+        public void run() {
+
+            timeInMillis = System.currentTimeMillis()-startTime;
+            updateTime=timeSwapBuff+timeInMillis;
+            int sec = (int) (updateTime/1000);
+            elaspedSec=sec;
+            int mins = (int) (sec/60);
+            elaspedMin=mins;
+            sec%=60;
+            int milliseconds = (int)(updateTime%1000);
+            elaspedMillis=milliseconds;
+            if(timeElapsedTextView!=null)
+            {
+                timeElapsedTextView.setText(String.format("Time Elapsed : %d m : %2d s ", mins, sec));
+
+            }
+            customHandler.postDelayed(this,100);
+
+        }
+    };
+
+    CountDownTimer countDownTimer;
+
+    static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO=101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,7 +215,6 @@ public class BookPagesActivity extends AppCompatActivity {
                     final ProgressBar progressBar = bookPagesDialog.findViewById(R.id.new_page_progressbar);
                     progressBar.setVisibility(View.INVISIBLE);
 
-                    final TextView timeElapsedTextView,recordStatusTexview,startRecordingTextView;
                     timeElapsedTextView = bookPagesDialog.findViewById(R.id.dialog_new_page_time_elapsed_textview);
                     recordStatusTexview = bookPagesDialog.findViewById(R.id.dialog_new_page_record_status_textview);
                     startRecordingTextView = bookPagesDialog.findViewById(R.id.dialog_start_recording_textview);
@@ -205,21 +237,36 @@ public class BookPagesActivity extends AppCompatActivity {
                     Button done = bookPagesDialog.findViewById(R.id.dialog_new_page_done_btn);
 
 
-                    final Runnable updateTimerThread = new Runnable() {
+                    countDownTimer = new CountDownTimer(5000,1000) {
                         @Override
-                        public void run() {
+                        public void onTick(long millisUntilFinished) {
 
-                            timeInMillis = System.currentTimeMillis()-startTime;
-                            updateTime=timeSwapBuff+timeInMillis;
-                            int sec = (int) (updateTime/1000);
-                            elaspedSec=sec;
-                            int mins = (int) (sec/60);
-                            elaspedMin=mins;
-                            sec%=60;
-                            int milliseconds = (int)(updateTime%1000);
-                            elaspedMillis=milliseconds;
-                            timeElapsedTextView.setText(String.format("Time Elapsed : %d m : %2d s : %1d ms", mins, sec, milliseconds));
-                            customHandler.postDelayed(this,100);
+                            recordStatusTexview.setText("Recording Status : Starting in "+millisUntilFinished/1000+"s");
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+
+                            startRecordingTextView.setText("Restart");
+                            startTime = System.currentTimeMillis();
+                            customHandler.postDelayed(updateTimerThread,500);
+                            mediaRecorder = new MediaRecorder();
+                            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                            mediaRecorder.setOutputFile(fileName);
+                            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+
+                            try {
+                                mediaRecorder.prepare();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            mediaRecorder.start();
+                            //Toast.makeText(BookPagesActivity.this, "started recording.", Toast.LENGTH_SHORT).show();
+                            recordStatusTexview.setText("Record Status : Recording");
 
                         }
                     };
@@ -227,7 +274,6 @@ public class BookPagesActivity extends AppCompatActivity {
                     done.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-
 
 
                             if(!TextUtils.isEmpty(pageNoEditText.getText().toString()))
@@ -248,6 +294,11 @@ public class BookPagesActivity extends AppCompatActivity {
                                 mediaRecorder = null;
                                 customHandler.removeCallbacks(updateTimerThread);
                             }
+
+                            if(countDownTimer!=null)
+                            {
+                                countDownTimer.cancel();
+                            }
                         }
                     });
 
@@ -256,33 +307,51 @@ public class BookPagesActivity extends AppCompatActivity {
                         public void onClick(View v) {
 
                             if (ContextCompat.checkSelfPermission(BookPagesActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
-                                    startActivity(intent);
+
+                                if (ActivityCompat.shouldShowRequestPermissionRationale(BookPagesActivity.this,
+                                        Manifest.permission.RECORD_AUDIO)) {
+
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(BookPagesActivity.this)
+                                            .setTitle("Permission Required")
+                                            .setCancelable(true)
+                                            .setMessage("App need audio recording permission to record audio. Please allow the permission to continue further.")
+                                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+
+                                                    ActivityCompat.requestPermissions(BookPagesActivity.this,
+                                                            new String[]{Manifest.permission.RECORD_AUDIO},
+                                                            MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+
+                                                }
+                                            })
+                                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+
+                                                    dialog.dismiss();
+
+                                                }
+                                            });
+
+                                    builder.show();
+
+                                } else {
+                                    ActivityCompat.requestPermissions(BookPagesActivity.this,
+                                            new String[]{Manifest.permission.RECORD_AUDIO},
+                                            MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+
+
                                 }
-                                Toast.makeText(BookPagesActivity.this, "Permission required.", Toast.LENGTH_SHORT).show();
-                            } else {
-
-                                startRecordingTextView.setText("Restart");
-                                startTime = System.currentTimeMillis();
-                                customHandler.postDelayed(updateTimerThread,500);
-                                mediaRecorder = new MediaRecorder();
-                                mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-                                mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-                                mediaRecorder.setOutputFile(fileName);
-                                mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-
-                                try {
-                                    mediaRecorder.prepare();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                mediaRecorder.start();
-                                //Toast.makeText(BookPagesActivity.this, "started recording.", Toast.LENGTH_SHORT).show();
-                                recordStatusTexview.setText("Record Status : Recording");
                             }
+                            else {
+                                recordStatusTexview.setText("Record Status : Not Started");
+                                timeElapsedTextView.setText("Time Elapsed : 0m: 00s : 00ms");
+                                customHandler.removeCallbacks(updateTimerThread);
+                                countDownTimer.cancel();
+                                countDownTimer.start();
+                            }
+
 
 
                         }
@@ -300,6 +369,10 @@ public class BookPagesActivity extends AppCompatActivity {
                                 mediaRecorder = null;
                                 customHandler.removeCallbacks(updateTimerThread);
                             }
+                            if(countDownTimer!=null)
+                            {
+                                countDownTimer.cancel();
+                            }
 
                         }
                     });
@@ -309,6 +382,28 @@ public class BookPagesActivity extends AppCompatActivity {
 
                 }
             });
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_RECORD_AUDIO: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    if(countDownTimer!=null)
+                    {
+                        countDownTimer.cancel();
+                        countDownTimer.start();
+
+                    }
+
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
         }
     }
 
