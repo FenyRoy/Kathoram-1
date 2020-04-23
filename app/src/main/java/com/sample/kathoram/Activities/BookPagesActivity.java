@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -80,30 +81,9 @@ public class BookPagesActivity extends AppCompatActivity {
     private static String fileName = null;
     private StorageReference storageReference;
 
-
-    private void startRecording() {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(fileName);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mediaRecorder.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mediaRecorder.start();
-    }
-
-    private void stopRecording() {
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
-
-    }
-
+    Handler customHandler = new Handler();
+    long startTime=0L,timeInMillis=0L,timeSwapBuff=0L,updateTime=0L;
+    int elaspedSec=0,elaspedMin=0,elaspedMillis=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,6 +182,13 @@ public class BookPagesActivity extends AppCompatActivity {
                     final ProgressBar progressBar = bookPagesDialog.findViewById(R.id.new_page_progressbar);
                     progressBar.setVisibility(View.INVISIBLE);
 
+                    final TextView timeElapsedTextView,recordStatusTexview,startRecordingTextView;
+                    timeElapsedTextView = bookPagesDialog.findViewById(R.id.dialog_new_page_time_elapsed_textview);
+                    recordStatusTexview = bookPagesDialog.findViewById(R.id.dialog_new_page_record_status_textview);
+                    startRecordingTextView = bookPagesDialog.findViewById(R.id.dialog_start_recording_textview);
+
+                    recordStatusTexview.setText("Record Status : Not Started");
+                    timeElapsedTextView.setText("Time Elapsed : 0m: 00s : 00ms");
 
                     Button cancel = bookPagesDialog.findViewById(R.id.dialog_new_page_cancel_btn);
                     cancel.setOnClickListener(new View.OnClickListener() {
@@ -216,9 +203,32 @@ public class BookPagesActivity extends AppCompatActivity {
                     });
 
                     Button done = bookPagesDialog.findViewById(R.id.dialog_new_page_done_btn);
+
+
+                    final Runnable updateTimerThread = new Runnable() {
+                        @Override
+                        public void run() {
+
+                            timeInMillis = System.currentTimeMillis()-startTime;
+                            updateTime=timeSwapBuff+timeInMillis;
+                            int sec = (int) (updateTime/1000);
+                            elaspedSec=sec;
+                            int mins = (int) (sec/60);
+                            elaspedMin=mins;
+                            sec%=60;
+                            int milliseconds = (int)(updateTime%1000);
+                            elaspedMillis=milliseconds;
+                            timeElapsedTextView.setText(String.format("Time Elapsed : %d m : %2d s : %1d ms", mins, sec, milliseconds));
+                            customHandler.postDelayed(this,100);
+
+                        }
+                    };
+
                     done.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+
+
 
                             if(!TextUtils.isEmpty(pageNoEditText.getText().toString()))
                             {
@@ -232,7 +242,11 @@ public class BookPagesActivity extends AppCompatActivity {
 
                             if(mediaRecorder !=null)
                             {
-                                stopRecording();
+                                recordStatusTexview.setText("Record Status : Recording Stopped");
+                                mediaRecorder.stop();
+                                mediaRecorder.release();
+                                mediaRecorder = null;
+                                customHandler.removeCallbacks(updateTimerThread);
                             }
                         }
                     });
@@ -248,9 +262,26 @@ public class BookPagesActivity extends AppCompatActivity {
                                 }
                                 Toast.makeText(BookPagesActivity.this, "Permission required.", Toast.LENGTH_SHORT).show();
                             } else {
-                                startRecording();
-                                Toast.makeText(BookPagesActivity.this, "started recording.", Toast.LENGTH_SHORT).show();
 
+                                startRecordingTextView.setText("Restart");
+                                startTime = System.currentTimeMillis();
+                                customHandler.postDelayed(updateTimerThread,500);
+                                mediaRecorder = new MediaRecorder();
+                                mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                                mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                                mediaRecorder.setOutputFile(fileName);
+                                mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+
+                                try {
+                                    mediaRecorder.prepare();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                                mediaRecorder.start();
+                                //Toast.makeText(BookPagesActivity.this, "started recording.", Toast.LENGTH_SHORT).show();
+                                recordStatusTexview.setText("Record Status : Recording");
                             }
 
 
@@ -263,10 +294,11 @@ public class BookPagesActivity extends AppCompatActivity {
                         public void onClick(View v) {
 
                             if (mediaRecorder != null) {
-                                Toast.makeText(BookPagesActivity.this, "stopped recording.", Toast.LENGTH_SHORT).show();
-                                stopRecording();
-
-
+                                recordStatusTexview.setText("Record Status : Recording Stopped");
+                                mediaRecorder.stop();
+                                mediaRecorder.release();
+                                mediaRecorder = null;
+                                customHandler.removeCallbacks(updateTimerThread);
                             }
 
                         }
