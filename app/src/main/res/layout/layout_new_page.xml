@@ -17,7 +17,7 @@
             android:id="@+id/new_page_progressbar"
             android:visibility="invisible"
             android:layout_width="match_parent"
-            android:layout_height="2dp"
+            android:layout_height="10dp"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:indeterminateTint="@color/colorPrimaryDark"
             android:indeterminate="true"

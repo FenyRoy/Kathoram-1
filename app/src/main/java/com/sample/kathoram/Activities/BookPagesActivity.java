@@ -234,7 +234,7 @@ public class BookPagesActivity extends AppCompatActivity {
                         }
                     });
 
-                    Button done = bookPagesDialog.findViewById(R.id.dialog_new_page_done_btn);
+                    final Button done = bookPagesDialog.findViewById(R.id.dialog_new_page_done_btn);
 
 
                     countDownTimer = new CountDownTimer(5000,1000) {
@@ -275,15 +275,26 @@ public class BookPagesActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View v) {
 
-
+                            done.setEnabled(false);
                             if(!TextUtils.isEmpty(pageNoEditText.getText().toString()))
                             {
-                                UploadFile(fileName, pageNoEditText.getText().toString());
-                                progressBar.setVisibility(View.VISIBLE);
+                                if(new File(fileName).exists())
+                                {
+                                    UploadFile(fileName, pageNoEditText.getText().toString(),done);
+                                    progressBar.setVisibility(View.VISIBLE);
+
+                                }
+                                else
+                                {
+                                    Toast.makeText(BookPagesActivity.this, "No audio recorded.", Toast.LENGTH_SHORT).show();
+                                    done.setEnabled(true);
+
+                                }
                             }
                             else
                             {
                                 Toast.makeText(BookPagesActivity.this, "give a page number.", Toast.LENGTH_SHORT).show();
+                                done.setEnabled(true);
                             }
 
                             if(mediaRecorder !=null)
@@ -407,7 +418,7 @@ public class BookPagesActivity extends AppCompatActivity {
         }
     }
 
-    private void UploadFile(final String fileName, final String pageno) {
+    private void UploadFile(final String fileName, final String pageno, final Button done) {
 
         final StorageReference filepath = storageReference.child(bookId).child(System.currentTimeMillis() + "_audio.3gp");
         Uri uri = Uri.fromFile(new File(fileName));
@@ -426,21 +437,22 @@ public class BookPagesActivity extends AppCompatActivity {
                             bookPageRef.child(pushid).child("pageno").setValue(pageno);
                             Toast.makeText(BookPagesActivity.this, "Uploaded file", Toast.LENGTH_SHORT).show();
 
+                            done.setEnabled(true);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+
+                            bookPagesDialog.dismiss();
+                            Toast.makeText(BookPagesActivity.this, "Failed to upload file.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(BookPagesActivity.this, "File saved at : " + fileName, Toast.LENGTH_SHORT).show();
+                            Log.i("mainTag",e.toString());
+                            done.setEnabled(true);
+
 
                         }
-                    })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-
-
-                                    bookPagesDialog.dismiss();
-                                    Toast.makeText(BookPagesActivity.this, "Failed to upload file.", Toast.LENGTH_SHORT).show();
-                                    Toast.makeText(BookPagesActivity.this, "File saved at : " + fileName, Toast.LENGTH_SHORT).show();
-                                    Log.i("mainTag",e.toString());
-
-                                }
-                            });
+                    });
 
 
 
@@ -449,6 +461,8 @@ public class BookPagesActivity extends AppCompatActivity {
                     Toast.makeText(BookPagesActivity.this, "Failed to upload file.", Toast.LENGTH_SHORT).show();
                     Toast.makeText(BookPagesActivity.this, "File saved at : " + fileName, Toast.LENGTH_SHORT).show();
                     Log.i("mainTag",task.getException().toString());
+                    done.setEnabled(true);
+
                 }
 
             }
@@ -460,8 +474,12 @@ public class BookPagesActivity extends AppCompatActivity {
                 Toast.makeText(BookPagesActivity.this, "Failed to upload file.", Toast.LENGTH_SHORT).show();
                 Toast.makeText(BookPagesActivity.this, "File saved at : " + fileName, Toast.LENGTH_SHORT).show();
                 Log.i("mainTag",e.toString());
+                done.setEnabled(true);
+
             }
         });
+
+
     }
 
 

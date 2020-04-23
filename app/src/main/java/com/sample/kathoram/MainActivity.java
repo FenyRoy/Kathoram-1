@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     Dialog bookDialog;
 
+    ProgressBar mainProgressbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerview = findViewById(R.id.main_recyclerview);
         mainRecyclerview.setHasFixedSize(true);
         mainRecyclerview.setLayoutManager(new LinearLayoutManager(this));
+
+        mainProgressbar = findViewById(R.id.main_progressbar);
+        mainProgressbar.setVisibility(View.VISIBLE);
 
         booksRef = FirebaseDatabase.getInstance().getReference().child("Books");
         booksRef.addValueEventListener(new ValueEventListener() {
@@ -83,14 +89,15 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Collections.reverse(bookList);
-                booksAdapter = new BooksAdapter(MainActivity.this, bookList);
+                booksAdapter = new BooksAdapter(MainActivity.this, bookList,booksRef);
                 mainRecyclerview.setAdapter(booksAdapter);
-
+                mainProgressbar.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                mainProgressbar.setVisibility(View.INVISIBLE);
+                Toast.makeText(MainActivity.this, "Error reading data from database. Check internet connection errors.", Toast.LENGTH_SHORT).show();
             }
         });
 
