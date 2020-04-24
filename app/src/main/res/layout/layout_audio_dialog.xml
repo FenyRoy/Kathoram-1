@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorWhite">
-
+    android:background="@color/colorWhite"
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/dialog_new_page_record_wrapper"
@@ -106,8 +106,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginLeft="50dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginRight="50dp"
-        android:layout_marginBottom="20dp">
+        android:layout_marginRight="50dp">
 
 
         <TextView
@@ -139,6 +138,19 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/dialog_audio_close_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        android:background="@drawable/curved_corners"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginBottom="20dp"/>
 
-
-</RelativeLayout>
+</LinearLayout>

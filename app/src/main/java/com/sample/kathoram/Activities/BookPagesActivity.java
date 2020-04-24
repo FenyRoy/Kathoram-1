@@ -37,6 +37,7 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -117,6 +118,8 @@ public class BookPagesActivity extends AppCompatActivity {
 
     static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO=101;
 
+    RelativeLayout rootBookPages;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,6 +128,8 @@ public class BookPagesActivity extends AppCompatActivity {
         bookId = getIntent().getStringExtra("id");
         if (bookId != null) {
 
+
+            rootBookPages = findViewById(R.id.book_pages_root);
 
             storageReference = FirebaseStorage.getInstance().getReference();
             fileName = this.getExternalFilesDir(null).getAbsolutePath() + System.currentTimeMillis() + "_raw_audio.3gp";
@@ -180,7 +185,7 @@ public class BookPagesActivity extends AppCompatActivity {
 
                     }
 
-                    pagesAdapter = new PagesAdapter(BookPagesActivity.this, bookPagesList,FirebaseStorage.getInstance(),bookPageRef);
+                    pagesAdapter = new PagesAdapter(BookPagesActivity.this, bookPagesList,FirebaseStorage.getInstance(),bookPageRef,rootBookPages);
                     bookPagesRecyclerview.setAdapter(pagesAdapter);
 
                 }

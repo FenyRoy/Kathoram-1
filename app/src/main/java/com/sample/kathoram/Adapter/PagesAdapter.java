@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -16,10 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +31,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -48,7 +53,6 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
     FirebaseStorage storageReference;
     DatabaseReference pageRef;
     Dialog audioDialog;
-    int length;
     final TextView playResumeTextView,pauseResumeTextView,audioProgressTextView,audioTotalProgressTextView;
     final ImageButton playBtn,pauseBtn,stopBtn;
     ProgressBar audioProgressbar;
@@ -57,6 +61,8 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
     long startTime,timeInMillis,timeSwapBuff,updateTime;
     int elaspedSec;
     int elaspedMillis;
+    Button dialogCloseButton;
+    RelativeLayout rootPages;
 
     final Runnable updateTimerThread = new Runnable() {
         @Override
@@ -93,14 +99,13 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
 
         }
     };
-    public PagesAdapter(Context context, List<BookPages> bookPagesList, FirebaseStorage reference, DatabaseReference bookPageRef) {
+    public PagesAdapter(Context context, List<BookPages> bookPagesList, FirebaseStorage reference, DatabaseReference bookPageRef, RelativeLayout rootBookPages) {
         this.context = context;
         this.bookPagesList = bookPagesList;
         mediaPlayer = new MediaPlayer();
         storageReference = reference;
         pageRef =  bookPageRef;
-        length=0;
-
+        rootPages = rootBookPages;
         startTime=0L;
         timeInMillis=0L;
         timeSwapBuff=0L;
@@ -112,11 +117,11 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
         audioDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         audioDialog.setContentView(R.layout.layout_audio_dialog);
         audioDialog.setCancelable(false);
-        audioDialog.setCanceledOnTouchOutside(true);
+        audioDialog.setCanceledOnTouchOutside(false);
         audioDialog.getWindow().getAttributes().windowAnimations = R.style.UpBottomSlideDialogAnimation;
 
         Window window = audioDialog.getWindow();
-        window.setGravity(Gravity.TOP);
+        window.setGravity(Gravity.BOTTOM);
         window.setLayout(GridLayout.LayoutParams.MATCH_PARENT, GridLayout.LayoutParams.WRAP_CONTENT);
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         window.setDimAmount(0.75f);
@@ -127,6 +132,8 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
 
         playResumeTextView = audioDialog.findViewById(R.id.dialog_play_textview);
         pauseResumeTextView = audioDialog.findViewById(R.id.dialog_pause_textview);
+
+        dialogCloseButton = audioDialog.findViewById(R.id.dialog_audio_close_btn);
 
         audioProgressTextView = audioDialog.findViewById(R.id.dialog_audio_progress_textview);
         audioTotalProgressTextView =  audioDialog.findViewById(R.id.dialog_audio_total_progress_textview);
@@ -155,131 +162,192 @@ public class PagesAdapter extends RecyclerView.Adapter<PagesViewHolder>{
             @Override
             public void onClick(View v) {
 
+                
                 if(!bookPagesList.get(position).getUriPath().equals("empty"))
                 {
-                    mediaPlayer = new MediaPlayer();
-                    try {
-                        mediaPlayer.setDataSource(bookPagesList.get(position).getUriPath());
-                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                            @Override
-                            public void onPrepared(MediaPlayer mp) {
-                                playLL.setVisibility(View.GONE);
-                                stopLL.setVisibility(View.VISIBLE);
-                                mediaPlayer.start();
-                                Toast.makeText(context, "Player started.", Toast.LENGTH_SHORT).show();
-                                startTime = System.currentTimeMillis()-mediaPlayer.getCurrentPosition();
-                                customHandler.postDelayed(updateTimerThread,0);
+                    final Snackbar delaySnackbar = Snackbar.make(rootPages,"Please wait until media is loaded",BaseTransientBottomBar.LENGTH_INDEFINITE).setAction("",null);
 
-                            }
-                        });
-                        mediaPlayer.prepare();
+                    AsyncTask<Void,Void,Void> mediaLoadingTask = new AsyncTask<Void, Void, Void>() {
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    mediaPlayer.seekTo(0);
-                    audioProgressTextView.setText("0s");
-                    double totalTime =  (double)mediaPlayer.getDuration()/1000;
-                    audioTotalProgressTextView.setText(totalTime+"s");
-
-                    audioProgressbar.setProgress(0);
-                    audioProgressbar.setMax(mediaPlayer.getDuration()/100);
-
-
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
-                        public void onCompletion(MediaPlayer mp) {
+                        protected void onPreExecute() {
+                            super.onPreExecute();
 
-                            playLL.setVisibility(View.VISIBLE);
-                            stopLL.setVisibility(View.GONE);
-                            pauseBtn.setImageResource(R.drawable.ic_pause);
-                            mp.seekTo(0);
-                            audioProgressbar.setProgress(0);
+                            delaySnackbar.show();
+
+                            holder.pagePlayRecord.setEnabled(false);
                             audioProgressTextView.setText("0s");
-                            customHandler.removeCallbacks(updateTimerThread);
+                            audioProgressbar.setProgress(0);
+
                         }
-                    });
 
-
-
-                    playBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void onClick(View v) {
+                        protected Void doInBackground(Void... voids) {
+                            mediaPlayer = new MediaPlayer();
+                            try {
+                                mediaPlayer.setDataSource(bookPagesList.get(position).getUriPath());
+                                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                    @Override
+                                    public void onPrepared(MediaPlayer mp) {
+                                        double totalTime =  (double)mediaPlayer.getDuration()/1000;
+                                        audioTotalProgressTextView.setText(totalTime+"s");
+                                        audioProgressbar.setMax(mediaPlayer.getDuration()/100);
+                                        playLL.setVisibility(View.GONE);
+                                        stopLL.setVisibility(View.VISIBLE);
+                                        mediaPlayer.start();
+                                        //Toast.makeText(context, "Player started.", Toast.LENGTH_SHORT).show();
+                                        startTime = System.currentTimeMillis()-mediaPlayer.getCurrentPosition();
+                                        customHandler.postDelayed(updateTimerThread,0);
 
-                            playLL.setVisibility(View.GONE);
-                            stopLL.setVisibility(View.VISIBLE);
-                            mediaPlayer.start();
-                            startTime = System.currentTimeMillis()-mediaPlayer.getCurrentPosition();
-                            customHandler.postDelayed(updateTimerThread,0);
-                        }
-                    });
+                                    }
+                                });
+                                mediaPlayer.prepare();
 
-
-
-                    pauseBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-
-                            if(mediaPlayer.isPlaying())
-                            {   customHandler.removeCallbacks(updateTimerThread);
-                                mediaPlayer.pause();
-                                Toast.makeText(context, "Player paused.", Toast.LENGTH_SHORT).show();
-                                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
-                                pauseBtn.setImageResource(R.drawable.ic_play);
-                                pauseResumeTextView.setText("resume");
-
-
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                            else
-                            {
-                                startTime = System.currentTimeMillis()-mediaPlayer.getCurrentPosition();
-                                customHandler.postDelayed(updateTimerThread,0);
-                                pauseResumeTextView.setText("pause");
-                                if(mediaPlayer.getCurrentPosition()!=mediaPlayer.getDuration())
-                                {
-
-                                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
-                                    mediaPlayer.start();
-                                    Toast.makeText(context, "Player resumed.", Toast.LENGTH_SHORT).show();
-                                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
-                                    pauseBtn.setImageResource(R.drawable.ic_pause);
-                                }
-                                else if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration())
-                                {
-                                    pauseBtn.setImageResource(R.drawable.ic_play);
-                                    mediaPlayer.seekTo(0);
-
-                                }
-
-                                else
-                                {
-                                    mediaPlayer.seekTo(0);
-                                    mediaPlayer.start();
-                                    Toast.makeText(context, "Player starting again.", Toast.LENGTH_SHORT).show();
-                                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
-                                    pauseBtn.setImageResource(R.drawable.ic_pause);
-                                }
-
-                            }
-
-
-
+                            mediaPlayer.seekTo(0);
+                            return null;
                         }
-                    });
 
-                    stopBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void onClick(View v) {
-                            pauseBtn.setImageResource(R.drawable.ic_pause);
-                            playLL.setVisibility(View.VISIBLE);
-                            stopLL.setVisibility(View.GONE);
-                            Toast.makeText(context, "Player stopped.", Toast.LENGTH_SHORT).show();
-                            mediaPlayer.stop();
-                            mediaPlayer.release();
-                        }
-                    });
+                        protected void onPostExecute(Void aVoid) {
+                            super.onPostExecute(aVoid);
 
-                    audioDialog.show();
+                            delaySnackbar.dismiss();
+                            audioDialog.show();
+                            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+
+                                    playLL.setVisibility(View.VISIBLE);
+                                    stopLL.setVisibility(View.GONE);
+                                    pauseBtn.setImageResource(R.drawable.ic_pause);
+                                    mp.seekTo(0);
+                                    audioProgressbar.setProgress(0);
+                                    audioProgressTextView.setText("0s");
+                                    customHandler.removeCallbacks(updateTimerThread);
+                                }
+                            });
+
+                            dialogCloseButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                    mediaPlayer.pause();
+                                    customHandler.removeCallbacks(updateTimerThread);
+                                    pauseBtn.setImageResource(R.drawable.ic_pause);
+                                    playLL.setVisibility(View.VISIBLE);
+                                    stopLL.setVisibility(View.GONE);
+                                    //Toast.makeText(context, "Player stopped.", Toast.LENGTH_SHORT).show();
+                                    if(mediaPlayer!=null)
+                                    {
+                                        mediaPlayer.stop();
+                                        mediaPlayer.release();
+                                    }
+                                    holder.pagePlayRecord.setEnabled(true);
+                                    audioDialog.dismiss();
+
+                                }
+                            });
+
+
+
+
+
+
+
+
+
+                            playBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                    playLL.setVisibility(View.GONE);
+                                    stopLL.setVisibility(View.VISIBLE);
+                                    startTime = System.currentTimeMillis();
+                                    mediaPlayer.seekTo(0);
+                                    customHandler.postDelayed(updateTimerThread,0);
+                                    mediaPlayer.start();
+                                }
+                            });
+
+
+
+                            pauseBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                    if(stopLL.isShown())
+                                    {
+                                        if(mediaPlayer.isPlaying())
+                                        {   customHandler.removeCallbacks(updateTimerThread);
+                                            mediaPlayer.pause();
+                                            //Toast.makeText(context, "Player paused.", Toast.LENGTH_SHORT).show();
+                                            mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
+                                            pauseBtn.setImageResource(R.drawable.ic_play);
+                                            pauseResumeTextView.setText("resume");
+
+
+                                        }
+                                        else
+                                        {
+                                            startTime = System.currentTimeMillis()-mediaPlayer.getCurrentPosition();
+                                            customHandler.postDelayed(updateTimerThread,0);
+                                            pauseResumeTextView.setText("pause");
+                                            if(mediaPlayer.getCurrentPosition()!=mediaPlayer.getDuration())
+                                            {
+
+                                                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
+                                                mediaPlayer.start();
+                                                //Toast.makeText(context, "Player resumed.", Toast.LENGTH_SHORT).show();
+                                                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
+                                                pauseBtn.setImageResource(R.drawable.ic_pause);
+                                            }
+                                            else if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration())
+                                            {
+                                                pauseBtn.setImageResource(R.drawable.ic_play);
+                                                mediaPlayer.seekTo(0);
+
+                                            }
+
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(context, "Press play to start.", Toast.LENGTH_SHORT).show();
+                                    }
+
+
+
+                                }
+                            });
+
+                            stopBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    customHandler.removeCallbacks(updateTimerThread);
+                                    audioProgressTextView.setText("0s");
+                                    pauseBtn.setImageResource(R.drawable.ic_pause);
+                                    playLL.setVisibility(View.VISIBLE);
+                                    stopLL.setVisibility(View.GONE);
+                                    //Toast.makeText(context, "Player stopped.", Toast.LENGTH_SHORT).show();
+                                    mediaPlayer.pause();
+                                    pauseResumeTextView.setText("pause");
+                                    audioProgressbar.setProgress(0);
+
+                                }
+                            });
+
+                        }
+
+
+                    };
+
+                    mediaLoadingTask.execute((Void[])null);
+
+
 
                 }
                 else

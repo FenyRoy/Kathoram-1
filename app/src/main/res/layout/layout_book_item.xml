@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp"
     >
 
     <TextView
@@ -21,7 +20,11 @@
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingEnd="12sp"
+        android:paddingTop="12sp"
+        android:paddingStart="12sp"
+        />
 
     <TextView
         android:id="@+id/book_time"
@@ -36,7 +39,19 @@
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/book_name" />
+        app:layout_constraintTop_toBottomOf="@+id/book_name"
+        android:paddingStart="12dp"
+        android:paddingEnd="12sp"
+        android:paddingBottom="12sp"
+        />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorAccent"
+        android:layout_marginStart="24sp"
+        android:layout_marginEnd="24sp"
+        android:layout_marginTop="4dp"
 
+        />
 </LinearLayout>
