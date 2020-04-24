@@ -5,11 +5,14 @@ public class BookPages {
     private String key;
     private String pageNo;
     private String uriPath;
+    private String pageDesc;
 
-    public BookPages(String key, String pageNo, String uriPath) {
+
+    public BookPages(String key, String pageNo, String uriPath, String pageDesc) {
         this.key = key;
         this.pageNo = pageNo;
         this.uriPath = uriPath;
+        this.pageDesc = pageDesc;
     }
 
     public String getKey() {
@@ -22,5 +25,9 @@ public class BookPages {
 
     public String getUriPath() {
         return uriPath;
+    }
+
+    public String getPageDesc() {
+        return pageDesc;
     }
 }

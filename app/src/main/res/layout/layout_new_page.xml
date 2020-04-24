@@ -62,11 +62,10 @@
 
             <EditText
                 android:id="@+id/dialog_new_page_no_edittext"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="New page No:"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
+                android:hint="New page No"
+                android:gravity="start"
                 android:textSize="15sp"
                 android:inputType="text"
                 android:maxLength="4"
@@ -78,11 +77,52 @@
 
 
         <LinearLayout
+            android:id="@+id/dialog_new_page_desc_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@+id/dialog_new_page_noumber_wrapper"
+            android:gravity="start"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginRight="50dp"
+            >
+
+            <TextView
+                android:id="@+id/dialog_new_book_desc_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Page Description : "
+                android:textSize="16sp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="10dp"/>
+
+            <EditText
+                android:id="@+id/dialog_new_page_desc_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Page Desciption"
+                android:gravity="start"
+                android:textSize="15sp"
+                android:inputType="text"
+                android:maxLength="100"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:padding="10dp"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+
+        <LinearLayout
             android:id="@+id/dialog_new_page_record_wrapper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_below="@id/dialog_new_page_noumber_wrapper"
+            android:layout_below="@id/dialog_new_page_desc_wrapper"
             android:layout_marginStart="20dp"
             android:layout_marginLeft="50dp"
             android:layout_marginTop="10dp"

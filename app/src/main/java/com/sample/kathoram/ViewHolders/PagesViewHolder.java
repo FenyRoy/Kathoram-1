@@ -12,7 +12,7 @@ import com.sample.kathoram.R;
 
 public class PagesViewHolder extends RecyclerView.ViewHolder {
 
-    public TextView pageNameTextView,pageStatusTextView;
+    public TextView pageNameTextView, pageDescTextView;
     public ImageButton pagePlayRecord,pageDelete;
     public ProgressBar pageProgressbar;
 
@@ -22,7 +22,7 @@ public class PagesViewHolder extends RecyclerView.ViewHolder {
         pageNameTextView = itemView.findViewById(R.id.page_name);
         pagePlayRecord = itemView.findViewById(R.id.page_play_recording);
         pageDelete = itemView.findViewById(R.id.page_delete_recording);
-        pageStatusTextView = itemView.findViewById(R.id.page_status);
+        pageDescTextView = itemView.findViewById(R.id.page_desc);
         pageProgressbar = itemView.findViewById(R.id.page_progressbar);
     }
 }

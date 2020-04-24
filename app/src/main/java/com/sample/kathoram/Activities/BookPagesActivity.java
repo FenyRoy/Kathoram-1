@@ -85,12 +85,11 @@ public class BookPagesActivity extends AppCompatActivity {
     private static String fileName = null;
     private StorageReference storageReference;
 
+    TextView timeElapsedTextView,recordStatusTexview,startRecordingTextView;
+
     Handler customHandler = new Handler();
     long startTime=0L,timeInMillis=0L,timeSwapBuff=0L,updateTime=0L;
     int elaspedSec=0,elaspedMin=0,elaspedMillis=0;
-
-    TextView timeElapsedTextView,recordStatusTexview,startRecordingTextView;
-
     final Runnable updateTimerThread = new Runnable() {
         @Override
         public void run() {
@@ -165,7 +164,7 @@ public class BookPagesActivity extends AppCompatActivity {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                         String key = snapshot.getKey();
-                        String pageno="empty",uri="empty";
+                        String pageno="empty",uri="empty",desc="empty";
                         if (snapshot.hasChild("pageno")) {
                              pageno = snapshot.child("pageno").getValue().toString();
                         }
@@ -173,8 +172,11 @@ public class BookPagesActivity extends AppCompatActivity {
                         {
                             uri = snapshot.child("uriPath").getValue().toString();
                         }
-
-                         bookPagesList.add(new BookPages(key,pageno,uri));
+                        if(snapshot.hasChild("pagedesc"))
+                        {
+                            desc= snapshot.child("pagedesc").getValue().toString();
+                        }
+                         bookPagesList.add(new BookPages(key,pageno,uri,desc));
 
                     }
 
@@ -209,6 +211,7 @@ public class BookPagesActivity extends AppCompatActivity {
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
                     final EditText pageNoEditText = bookPagesDialog.findViewById(R.id.dialog_new_page_no_edittext);
+                    final EditText pageDescEditText = bookPagesDialog.findViewById(R.id.dialog_new_page_desc_edittext);
                     final ImageButton start, stop;
                     start = bookPagesDialog.findViewById(R.id.dialog_start_recording);
                     stop = bookPagesDialog.findViewById(R.id.dialog_stop_recording);
@@ -276,11 +279,11 @@ public class BookPagesActivity extends AppCompatActivity {
                         public void onClick(View v) {
 
                             done.setEnabled(false);
-                            if(!TextUtils.isEmpty(pageNoEditText.getText().toString()))
+                            if(!TextUtils.isEmpty(pageNoEditText.getText().toString()) && !TextUtils.isEmpty(pageDescEditText.getText().toString()))
                             {
                                 if(new File(fileName).exists())
                                 {
-                                    UploadFile(fileName, pageNoEditText.getText().toString(),done);
+                                    UploadFile(fileName, pageNoEditText.getText().toString(),pageDescEditText.getText().toString(),done);
                                     progressBar.setVisibility(View.VISIBLE);
 
                                 }
@@ -290,6 +293,11 @@ public class BookPagesActivity extends AppCompatActivity {
                                     done.setEnabled(true);
 
                                 }
+                            }
+                            else if(TextUtils.isEmpty(pageDescEditText.getText().toString()))
+                            {
+                                Toast.makeText(BookPagesActivity.this, "give a page description.", Toast.LENGTH_SHORT).show();
+                                done.setEnabled(true);
                             }
                             else
                             {
@@ -418,7 +426,7 @@ public class BookPagesActivity extends AppCompatActivity {
         }
     }
 
-    private void UploadFile(final String fileName, final String pageno, final Button done) {
+    private void UploadFile(final String fileName, final String pageno, final String desc, final Button done) {
 
         final StorageReference filepath = storageReference.child(bookId).child(System.currentTimeMillis() + "_audio.3gp");
         Uri uri = Uri.fromFile(new File(fileName));
@@ -435,6 +443,7 @@ public class BookPagesActivity extends AppCompatActivity {
                             String pushid = bookPageRef.push().getKey();
                             bookPageRef.child(pushid).child("uriPath").setValue(String.valueOf(uri));
                             bookPageRef.child(pushid).child("pageno").setValue(pageno);
+                            bookPageRef.child(pushid).child("pagedesc").setValue(desc);
                             Toast.makeText(BookPagesActivity.this, "Uploaded file", Toast.LENGTH_SHORT).show();
 
                             done.setEnabled(true);

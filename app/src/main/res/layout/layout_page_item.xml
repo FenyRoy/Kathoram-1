@@ -34,7 +34,7 @@
         android:maxLength="30"
         android:gravity="start"/>
     <TextView
-        android:id="@+id/page_status"
+        android:id="@+id/page_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
